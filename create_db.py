@@ -11,7 +11,7 @@ def create_database() -> None:
     cur = con.cursor()
 
     create_db = read_sql('create_db.sql')
-    cur.execute(create_db)
+    cur.executescript(create_db)
 
     con.commit()
     con.close()

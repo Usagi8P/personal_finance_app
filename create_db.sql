@@ -9,3 +9,10 @@ CREATE TABLE IF NOT EXISTS ticker_data (
     volume INTEGER,
     PRIMARY KEY (ticker, date)
 );
+CREATE TABLE IF NOT EXISTS investments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ticker TEXT,
+    date DATE,
+    price REAL,
+    volume INTEGER
+);
