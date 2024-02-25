@@ -24,7 +24,8 @@ def get_ticker_data(ticker:str) -> Optional[dict]:
     start_date = '2022-01-01'
     saved_date = check_start_date(ticker)
     if saved_date is not None:
-        start_date = add_day(saved_date)
+        date_format = datetime.strptime(saved_date, '%Y-%m-%d') + timedelta(days=1)
+        start_date = date_format.strftime('%Y-%m-%d')
     if saved_date == datetime.today().strftime('%Y-%m-%d'):
         return None
 
@@ -58,10 +59,6 @@ def check_start_date(ticker:str) -> Optional[str]:
     
     date, = result
     return date
-
-def add_day(date:str) -> str:
-    date_format = datetime.strptime(date, '%Y-%m-%d') + timedelta(days=1)
-    return date_format.strftime('%Y-%m-%d')
 
 
 if __name__ == "__main__":

@@ -16,3 +16,8 @@ CREATE TABLE IF NOT EXISTS investments (
     price REAL,
     volume INTEGER
 );
+CREATE TABLE IF Not EXISTS income (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    amount REAL
+);
