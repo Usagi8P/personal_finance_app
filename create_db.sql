@@ -21,3 +21,8 @@ CREATE TABLE IF Not EXISTS income (
     name TEXT,
     amount REAL
 );
+CREATE TABLE IF Not EXISTS spending (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    amount REAL
+);
