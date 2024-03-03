@@ -56,9 +56,15 @@ class SavingsView(ctk.CTkFrame):
         self.title = ctk.CTkLabel(self, text='Total Excess', font=self.font)
         self.title.pack()
 
+        self.income_var = ctk.StringVar(self)
+        self.spending_var = ctk.StringVar(self)
         self.savings_var = ctk.StringVar(self)
         self.refresh_savings() 
 
+        self.income = ctk.CTkLabel(self, textvariable=self.income_var,font=self.small_font)
+        self.income.pack()
+        self.spending = ctk.CTkLabel(self, textvariable=self.spending_var,font=self.small_font)
+        self.spending.pack()
         self.savings = ctk.CTkLabel(self, textvariable=self.savings_var,font=self.font)
         self.savings.pack()
         
@@ -73,13 +79,18 @@ class SavingsView(ctk.CTkFrame):
         get_spending = cur.execute("SELECT SUM(amount) FROM spending")
         spending = get_spending.fetchone()[0]
         
-        total_savings = 0.00
-        if income is not None and spending is not None:
-            total_savings = income - spending
+        if income is None:
+            income = 0.00
+        if spending is None:
+            spending = 0.00
+        
+        total_savings = income - spending
 
         con.close()
 
-        self.savings_var.set(str(total_savings))
+        self.income_var.set(f"{income:,.2f}")
+        self.spending_var.set(f"-{spending:,.2f}")
+        self.savings_var.set(f"{total_savings:,.2f}")
 
 
 class IncomeSpendingView(ctk.CTkFrame):
@@ -93,7 +104,7 @@ class IncomeSpendingView(ctk.CTkFrame):
         IncomeView(self)
         SpendingView(self)
 
-class IncomeView(ctk.CTkFrame):
+class IncomeView(ctk.CTkScrollableFrame):
     def __init__(self,parent):
         super().__init__(master=parent)
         self.grid(column=0, row=0, sticky='nsew', padx=5, pady=5)
@@ -106,19 +117,17 @@ class IncomeView(ctk.CTkFrame):
         self.title.pack(anchor='nw',padx=5)
 
         self.row_labels = ctk.CTkFrame(self, fg_color='transparent')
-        self.row_labels.columnconfigure(0, weight=2)
-        self.row_labels.columnconfigure(1, weight=2)
-        self.row_labels.columnconfigure(2, weight=1)
-        self.row_labels.rowconfigure(0)
         self.row_labels.pack(anchor='nw', fill='x')
+        ctk.CTkLabel(self.row_labels,text='').pack(pady=2)
 
         self.income_name = ctk.CTkEntry(self.row_labels, placeholder_text='Income Name', font=self.small_font)
-        self.income_name.grid(row=0,column=0,padx=5,sticky='ew')
+        self.income_name.place(relx=0/5,relwidth=2/5)
         self.income_amount = ctk.CTkEntry(self.row_labels, placeholder_text='123.45', validate='key',validatecommand=(self.validate_command, '%P'),
                                           font=self.small_font)
-        self.income_amount.grid(row=0,column=1,padx=5,sticky='ew')
-        self.confirm_button = ctk.CTkButton(self.row_labels, text='Confirm',command=lambda:self.store_entry(self.income_name,self.income_amount),width=100)
-        self.confirm_button.grid(row=0,column=2,padx=5,pady=5,sticky='ew')
+        self.income_amount.place(relx=2/5,relwidth=2/5)
+        self.confirm_button = ctk.CTkButton(self.row_labels, text='Confirm',command=lambda:self.store_entry(self.income_name,self.income_amount))
+        self.confirm_button.place(relx=4/5,relwidth=1/5)
+
 
         self.entries = []
         self.entries_view()
@@ -130,18 +139,15 @@ class IncomeView(ctk.CTkFrame):
 
         for i,entry in enumerate(entries):
             self.row_entries = ctk.CTkFrame(self,fg_color='transparent')
-            self.row_entries.columnconfigure(0, weight=2)
-            self.row_entries.columnconfigure(1, weight=2)
-            self.row_entries.columnconfigure(2, weight=1)
-            self.row_entries.rowconfigure(0)
             self.row_entries.pack(side='top',anchor='nw',fill='x')
+            ctk.CTkLabel(self.row_entries,text='').pack(pady=2)
 
             self.entry_name = ctk.CTkLabel(self.row_entries,text=f'{entry[1]}',font=font, justify='right')
-            self.entry_name.grid(row=0,column=0,padx=10,sticky='w')
-            self.entry_amount = ctk.CTkLabel(self.row_entries,text=f'{entry[2]}',font=font, justify='right')
-            self.entry_amount.grid(row=0,column=1,padx=10,sticky='w')
-            self.delete = ctk.CTkButton(self.row_entries, text='Delete',command=lambda index=i:self.delete_entry(index, entries),width=50)
-            self.delete.grid(row=0,column=2,padx=5,pady=5,sticky='ew')
+            self.entry_name.place(relx=0/5)
+            self.entry_amount = ctk.CTkLabel(self.row_entries,text=f'{entry[2]:,.2f}',font=font, justify='right')
+            self.entry_amount.place(relx=2/5)
+            self.delete = ctk.CTkButton(self.row_entries, text='Delete',command=lambda index=i:self.delete_entry(index, entries))
+            self.delete.place(relx=4/5,relwidth=1/5)
             
             self.entries.append(self.entry_name)
             self.entries.append(self.entry_amount)
@@ -188,7 +194,7 @@ class IncomeView(ctk.CTkFrame):
     def validate_entry(self,text):
         return re.match(r'^\d+(\.\d{0,2})?$', text) is not None
 
-class SpendingView(ctk.CTkFrame):
+class SpendingView(ctk.CTkScrollableFrame):
     def __init__(self,parent):
         super().__init__(master=parent)
         self.grid(column=1, row=0, sticky='nsew', padx=5, pady=5)
@@ -201,19 +207,17 @@ class SpendingView(ctk.CTkFrame):
         self.title.pack(anchor='nw', padx=5)
 
         self.row_labels = ctk.CTkFrame(self, fg_color='transparent')
-        self.row_labels.columnconfigure(0, weight=2)
-        self.row_labels.columnconfigure(1, weight=2)
-        self.row_labels.columnconfigure(2, weight=1)
-        self.row_labels.rowconfigure(0)
         self.row_labels.pack(anchor='nw', fill='x')
+        ctk.CTkLabel(self.row_labels,text='').pack(pady=2)
+
 
         self.spending_name = ctk.CTkEntry(self.row_labels, placeholder_text='Spending Name', font=self.small_font)
-        self.spending_name.grid(row=0, column=0, padx=5,pady=5, sticky='ew')
+        self.spending_name.place(relx=0/5,relwidth=2/5)
         self.spending_amount = ctk.CTkEntry(self.row_labels, placeholder_text='123.45', validate='key',validatecommand=(self.validate_command, '%P'),
                                             font=self.small_font)
-        self.spending_amount.grid(row=0, column=1, padx=5,pady=5, sticky='ew')
+        self.spending_amount.place(relx=2/5,relwidth=2/5)
         self.confirm_button = ctk.CTkButton(self.row_labels, text='Confirm',command=lambda:self.store_entry(self.spending_name,self.spending_amount), width=100)
-        self.confirm_button.grid(row=0,column=2, padx=5,pady=5, sticky='ew')
+        self.confirm_button.place(relx=4/5,relwidth=1/5)
 
         self.entries = []
         self.entries_view()
@@ -225,18 +229,16 @@ class SpendingView(ctk.CTkFrame):
 
         for i,entry in enumerate(entries):
             self.row_entries = ctk.CTkFrame(self, fg_color='transparent')
-            self.row_entries.columnconfigure(0, weight=2)
-            self.row_entries.columnconfigure(1, weight=2)
-            self.row_entries.columnconfigure(2, weight=1)
-            self.row_entries.rowconfigure(0)
             self.row_entries.pack(side='top',anchor='nw',fill='x')
+            ctk.CTkLabel(self.row_entries,text='').pack(pady=2)
 
             self.entry_name = ctk.CTkLabel(self.row_entries,text=f'{entry[1]}',font=font, justify='right')
-            self.entry_name.grid(row=0,column=0,padx=10,sticky='w')
-            self.entry_amount = ctk.CTkLabel(self.row_entries,text=f'{entry[2]}',font=font, justify='right')
-            self.entry_amount.grid(row=0,column=1,padx=10,sticky='w')
+            self.entry_name.place(relx=0/5)
+            self.entry_amount = ctk.CTkLabel(self.row_entries,text=f'{entry[2]:,.2f}',font=font, justify='right')
+            self.entry_amount.place(relx=2/5)
             self.delete = ctk.CTkButton(self.row_entries, text='Delete',command=lambda index=i:self.delete_entry(index, entries), width=50)
-            self.delete.grid(row=0,column=2,padx=5,pady=5,sticky='ew')
+            self.delete.place(relx=4/5,relwidth=1/5)
+
             self.entries.append(self.entry_name)
             self.entries.append(self.entry_amount)
             self.entries.append(self.delete)
