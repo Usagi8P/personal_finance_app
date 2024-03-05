@@ -13,16 +13,11 @@ class App(ctk.CTk):
         self.title('Personal Finane')
         self.geometry("800x500")
         ctk.set_appearance_mode("dark")
-        
-        self.columnconfigure(0,weight=1)
-        self.rowconfigure(0,weight=1)
-        self.rowconfigure(1,weight=0)
 
         if not self.database_exists():
             create_database()
 
-        IncomeSpendingView(self)
-        SavingsView(self)
+        self.tab_view = TabView(self)
 
     def database_exists(self) -> bool:
         if not os.path.isfile('db/personal_finance.db'):
@@ -45,6 +40,33 @@ class App(ctk.CTk):
     def mainloop(self, n: int = 0) -> None:
         return super().mainloop(n)
     
+
+class TabView(ctk.CTkTabview):
+    def __init__(self,parent):
+        super().__init__(parent,fg_color=None)
+        self.pack(expand=True,fill='both')
+
+
+        self.add('Savings')
+        self.add('Investments')
+        self.set('Savings')
+
+        SavingsTab(self.tab('Savings'))
+
+
+class SavingsTab(ctk.CTkFrame):
+    def __init__(self,parent):
+        super().__init__(parent,fg_color='transparent')
+        self.pack(expand=True,fill='both')
+
+        self.columnconfigure(0,weight=1)
+        self.rowconfigure(0,weight=1)
+        self.rowconfigure(1,weight=0)
+
+        IncomeSpendingView(self)
+        SavingsView(self)
+    
+
 class SavingsView(ctk.CTkFrame):
     def __init__(self,parent):
         super().__init__(master=parent)
@@ -103,6 +125,7 @@ class IncomeSpendingView(ctk.CTkFrame):
 
         IncomeView(self)
         SpendingView(self)
+
 
 class IncomeView(ctk.CTkScrollableFrame):
     def __init__(self,parent):
@@ -193,6 +216,7 @@ class IncomeView(ctk.CTkScrollableFrame):
     
     def validate_entry(self,text):
         return re.match(r'^\d+(\.\d{0,2})?$', text) is not None
+    
 
 class SpendingView(ctk.CTkScrollableFrame):
     def __init__(self,parent):
