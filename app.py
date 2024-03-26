@@ -4,6 +4,7 @@ import sqlite3
 import re
 from create_db import create_database
 from colors import *
+from create_fig import Graph
 
 
 class App(ctk.CTk):
@@ -49,9 +50,18 @@ class TabView(ctk.CTkTabview):
 
         self.add('Savings')
         self.add('Investments')
-        self.set('Savings')
+        self.set('Investments')
 
         SavingsTab(self.tab('Savings'))
+        InvestmentsTab(self.tab('Investments'))
+
+
+class InvestmentsTab(ctk.CTkFrame):
+    def __init__(self,parent):
+        super().__init__(parent,fg_color='transparent')
+        self.pack(expand=True,fill='both')
+
+        Graph(self)
 
 
 class SavingsTab(ctk.CTkFrame):
